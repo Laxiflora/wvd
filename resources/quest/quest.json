@@ -48,7 +48,7 @@
             ["position","右上",[500,610]],
             ["position","右上",[445,290]],
             ["position","右上",[820,605]],
-            ["harken", "右上",null]
+            ["harken", "右上","stair_DH_R4"]
         ],
         "_EOT":[
             ["press","DH",["EdgeOfTown",[1,1]],1],
@@ -92,31 +92,16 @@
         ]
     },
 
-    "DH-Church":{
+    "DH-7f-auto":{
         "_TYPE":"dungeon",
-        "questName":"[刷怪]深雪教会区",
-        "_TARGETINFOLIST":[
-            ["position","左下",[240,810]],
-            ["position","左下",[130,400]],
-            ["position","右上",[500,930]],
-            ["Bharken", "右上",null]
-        ],
-        "_EOT":[
-            ["press","DH",["EdgeOfTown",[1,1]],1],
-            ["press","stair_DH_Church","input swipe 650 900 650 250",1]
-        ]
-    },
-
-    "DH-Church-auto":{
-        "_TYPE":"dungeon",
-        "questName":"[宝箱]教会-全范围找箱",
+        "questName":"[宝箱+刷怪]深雪R7自动箱",
         "_TARGETINFOLIST":[
             ["chest_auto"],
-            ["Bharken", "右下",null]
+            ["harken", "右上",null]
         ],
         "_EOT":[
             ["press","DH",["EdgeOfTown",[1,1]],1],
-            ["press","stair_DH_Church","input swipe 650 900 650 250",1]
+            ["press","DH-R7","input swipe 650 900 650 250",1]
         ]
     },
 
@@ -157,6 +142,33 @@
         "_EOT":[
             ["press","DH",["EdgeOfTown",[1,1]],1],
             ["press","DH-R9","input swipe 650 900 650 250",1]
+        ]
+    },
+
+    "DH-Church-upper":{
+        "_TYPE":"dungeon",
+        "questName":"[宝箱]教会-自动宝箱上半",
+        "_TARGETINFOLIST":[
+            ["chest","左上",null],
+            ["chest","右上",null],
+            ["Bharken", "右上","stair_DH_Church"]
+        ],
+        "_EOT":[
+            ["press","DH",["EdgeOfTown",[1,1]],1],
+            ["press","DH-Church","input swipe 650 900 650 250",1]
+        ]
+    },
+    
+    "DH-Church-auto":{
+        "_TYPE":"dungeon",
+        "questName":"[宝箱]教会-全范围找箱",
+        "_TARGETINFOLIST":[
+            ["chest_auto"],
+            ["Bharken", "右上","stair_DH_Church"]
+        ],
+        "_EOT":[
+            ["press","DH",["EdgeOfTown",[1,1]],1],
+            ["press","DH-Church","input swipe 650 900 650 250",1]
         ]
     },
 
@@ -464,6 +476,22 @@
         [
             ["press","intoWorldMap",["LMG/LMG","input swipe 690 590 690 690"],1],
             ["press","LMG/LMG1F",[1,1],1]
+        ]
+    },
+    "LMG-FT":{
+        "_TYPE":"dungeon",
+        "questName":"[骨头]炉壶灵庙(战士骨)",
+        "_TARGETINFOLIST":[
+            ["position","右下",[393,545]],
+            ["position","右下",[657,755]],
+            ["position","右下",[555,1235]],
+            ["position","右下",[178,1240]]
+        ],
+        "_preEOTcheck":"LMG/LMG",
+        "_EOT":
+        [
+            ["press","intoWorldMap",["LMG/LMG","input swipe 690 590 690 690"],1],
+            ["press","LMG/FTB1F",[1,1],1]
         ]
     },
 
