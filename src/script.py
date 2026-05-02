@@ -2703,7 +2703,7 @@ def Factory():
                     runtimeContext._COUNTERDUNG+=1
                     RestartableSequenceExecution(
                         lambda: logger.info(_("第一步: 重置因果")),
-                        lambda: CursedWheelTimeLeap("GhostsOfYore","COS/ArnasPast")
+                        lambda: CursedWheelTimeLeap("FortressArrival","COS/ArnasPast")
                         )
                     Sleep(10)
                     RestartableSequenceExecution(
