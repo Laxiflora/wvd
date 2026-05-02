@@ -2722,12 +2722,21 @@ def Factory():
                         lambda: FindCoordsOrElseExecuteFallbackAndWait("Inn",["COS/Okay","return",[1,1]],1),
                         lambda: StateInn(),
                         )
-                    
                     RestartableSequenceExecution(
                         lambda: logger.info(_("第五步: 进入洞窟")),
                         lambda: Press(FindCoordsOrElseExecuteFallbackAndWait("COS/COS",["EdgeOfTown",[1,1]],1)),
-                        lambda: Press(FindCoordsOrElseExecuteFallbackAndWait("COS/COSENT",[1,1],1))
-                        )
+                        #lambda: Press(FindCoordsOrElseExecuteFallbackAndWait("COS/COSENT",[1,1],1)),
+                    )
+                    Sleep(2)
+                    RestartableSequenceExecution(
+                        lambda: logger.info(_("第5.5步: 點選ENT")),
+                        lambda: Press([649, 884]),  # 避開掃描不到的問題
+                    )
+                    Sleep(2)
+                    RestartableSequenceExecution(
+                        lambda: logger.info(_("第5.5步: 確保不因為低意志卡死")),
+                        lambda: Press([649, 940]),
+                    )
                     quest._SPECIALDIALOGOPTION = ["COS/takehimwithyou"]
                     cosb1f = [TargetInfo("position","右下",[286-54,440]),
                               TargetInfo("position","右下",[819,653+54]),
