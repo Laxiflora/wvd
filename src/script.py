@@ -3083,10 +3083,10 @@ def Factory():
                         lambda: FindCoordsOrElseExecuteFallbackAndWait("Inn",["returntotown","returnText","leaveDung","blessing",[1,1]],2)
                         )
 
-                    logger.info(_("第三步: 前往王城..."))
-                    RestartableSequenceExecution(
-                        lambda:TeleportFromCityToWorldLocation("City_RoyalCityLuknalia","input swipe 450 150 500 150"),
-                        )
+                    # logger.info(_("第三步: 前往王城..."))
+                    # RestartableSequenceExecution(
+                    #     lambda:TeleportFromCityToWorldLocation("City_RoyalCityLuknalia","input swipe 450 150 500 150"),
+                    #     )
 
                     logger.info(_("第四步: 悬赏揭榜"))
                     RestartableSequenceExecution(
@@ -3100,7 +3100,7 @@ def Factory():
                         lambda:FindCoordsOrElseExecuteFallbackAndWait("dungFlag",["EdgeOfTown","beginningAbyss","B4FLabyrinth","GotoDung",[1,1]],1)
                         )
                     RestartableSequenceExecution( 
-                        lambda:StateDungeon([TargetInfo("position","左下",[452,545]),
+                        lambda:StateDungeon([#TargetInfo("position","左下",[452,545]),
                                              TargetInfo("position","左下",[452,1026]),
                                              TargetInfo("harken","左上",None)]),
                         )
