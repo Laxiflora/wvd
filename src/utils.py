@@ -260,6 +260,7 @@ def BuildQuestReflection():
             seen_names.add(quest_name)
             
             # 添加到映射表和已见集合
+            print(quest_info)
             category = quest_info.get(f"questCategory_{LANGUAGE}", quest_info["questCategory"])
             quest_reflect_map.setdefault(category, {})[quest_name] = quest_code
             
