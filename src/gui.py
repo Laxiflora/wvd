@@ -521,10 +521,12 @@ class ConfigPanelApp(tk.Toplevel):
         self.EMU_PATH.set(emu_path)
 
         # farm target
-        if self.FARM_TARGET_TEXT.get() in DUNGEON_TARGETS:
-            self.FARM_TARGET.set(DUNGEON_TARGETS[self.FARM_TARGET_TEXT.get()])
-        else:
-            self.FARM_TARGET.set(None)
+        for category in DUNGEON_TARGETS.keys():
+            if self.FARM_TARGET_TEXT.get() in DUNGEON_TARGETS[category]:
+                self.FARM_TARGET.set(DUNGEON_TARGETS[category][self.FARM_TARGET_TEXT.get()])
+                break
+            else:
+                self.FARM_TARGET.set(None)
         
         ##################
         existing_config = LoadRawConfigFromFile() or {}
@@ -640,8 +642,34 @@ class ConfigPanelApp(tk.Toplevel):
         frame_row = ttk.Frame(container)
         frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
         ttk.Label(frame_row, text=_("ADB地址:")).grid(row=0, column=2, sticky=tk.W, pady=5)
-        vcmd_non_neg = self.register(lambda x: ((x=="")or(x.isdigit())))
-        self.adb_port_entry = ttk.Entry(frame_row, textvariable=self.ADB_ADRESS, validate="key",
+
+        def validate_adb_focusout(P):
+            """焦点离开时自动补全，否则保留用户输入"""
+            if P == "":
+                return True
+
+            # 情况1：纯数字无 '.'
+            if P.isdigit() and '.' not in P:
+                new_val = f"127.0.0.1:{P}"
+                self.ADB_ADRESS.set(new_val)
+                return True
+
+            # 情况2：包含逗号，且其余全是数字
+            if ',' in P:
+                parts = P.split(',')
+                if all(p.strip().isdigit() for p in parts if p.strip()):
+                    ports = [int(p.strip()) for p in parts if p.strip()]
+                    new_val = f"127.0.0.1:{max(ports)}"
+                    self.ADB_ADRESS.set(new_val)
+                    return True
+
+            # 其他情况：不做任何处理，保留用户输入，允许焦点离开
+            return True
+        
+        self.adb_port_entry = ttk.Entry(frame_row, textvariable=self.ADB_ADRESS, validate="focusout",
+                                        validatecommand=(
+                                        self.register(validate_adb_focusout),
+                                        '%P'),
                                         width=15)
         self.adb_port_entry.grid(row=0, column=3)
         self.button_save_adb_port = ttk.Button(frame_row, text=_("保存"), command=self.save_config, width=5)
@@ -650,6 +678,7 @@ class ConfigPanelApp(tk.Toplevel):
         frame_row = ttk.Frame(container)
         frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
         ttk.Label(frame_row, text=_("模拟器编号:")).grid(row=0, column=0, sticky=tk.W, pady=5)
+        vcmd_non_neg = self.register(lambda x: ((x=="")or(x.isdigit())))
         self.emu_index_entry = ttk.Entry(frame_row, textvariable=self.EMU_INDEX, validate="key",
                                          validatecommand=(vcmd_non_neg, '%P'), width=5)
         self.emu_index_entry.grid(row=0, column=1)
@@ -665,7 +694,22 @@ class ConfigPanelApp(tk.Toplevel):
         container = self.section_farm.content_frame
         row_counter = 0
 
+        # 分类目标, 我们先写行, 等下面再写这行有什么
+        frame_row = ttk.Frame(container)
+        frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
+        current_quest_cate = ""
+        for k in DUNGEON_TARGETS.keys():
+            if self.FARM_TARGET_TEXT.get() in DUNGEON_TARGETS[k]:
+                current_quest_cate = k
+        ttk.Label(frame_row, text=_("任务类别:")).grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.farm_target_category_combo = ttk.Combobox(frame_row,
+                                              values=list(DUNGEON_TARGETS.keys()),
+                                              state="readonly")
+        self.farm_target_category_combo.set(current_quest_cate)
+        self.farm_target_category_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5)
+
         # 地下城目标
+        row_counter += 1
         frame_row = ttk.Frame(container)
         frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
             
@@ -694,6 +738,7 @@ class ConfigPanelApp(tk.Toplevel):
 
             # 更新善恶
             # TODO 暂时不写了 太麻烦了.
+            # 莫非善恶已经正常了?
 
             # 任务点, 这里无论如何都要拿specific的设置.
             specific_config = LoadConfig("specific")
@@ -739,12 +784,29 @@ class ConfigPanelApp(tk.Toplevel):
             return
 
         ttk.Label(frame_row, text=_("任务目标:")).grid(row=0, column=0, sticky=tk.W, pady=5)
+        category = self.farm_target_category_combo.get()
+        if category not in DUNGEON_TARGETS.keys():
+            dungeon_target_list = [key for k in DUNGEON_TARGETS.keys() for key in DUNGEON_TARGETS[k].keys()]
+        else:
+            dungeon_target_list = [key for key in DUNGEON_TARGETS[category].keys()]
         self.farm_target_combo = ttk.Combobox(frame_row,
                                               textvariable=self.FARM_TARGET_TEXT, 
-                                              values=list(DUNGEON_TARGETS.keys()),
-                                              state="readonly")
+                                              values=dungeon_target_list,
+                                              state="readonly",
+                                              width=25)
         self.farm_target_combo.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5)
         # self.farm_target_combo.bind("<<ComboboxSelected>>", lambda e: close_task_specific_config()) # 这里用后面的战斗部分的更新方法覆盖
+
+        # 这是分类那个combobox
+        def on_category_change(event=None):
+            category = self.farm_target_category_combo.get()
+            self.farm_target_combo['values'] = list(DUNGEON_TARGETS[category].keys())
+            current_target = self.farm_target_combo.get()
+            if current_target not in self.farm_target_combo['values']:
+                self.farm_target_combo.set(self.farm_target_combo['values'][0])
+                self.farm_target_combo.event_generate('<<ComboboxSelected>>')
+        self.farm_target_category_combo.bind('<<ComboboxSelected>>', on_category_change)
+
 
         row_counter += 1
         frame_row = ttk.Frame(container)
@@ -956,6 +1018,7 @@ class ConfigPanelApp(tk.Toplevel):
                 self.current_task_points = LoadQuest(task_name)._TARGETINFOLIST
                 self.is_current_task_dungeon = (LoadQuest(task_name)._TYPE == 'dungeon')
             except Exception:
+                logger.info(task_name)
                 logger.error(_('不可用的任务名.'))
                 self.current_task_points = []
                 self.is_current_task_dungeon = False
@@ -1055,6 +1118,12 @@ class ConfigPanelApp(tk.Toplevel):
             self.overall_combo.bind("<<ComboboxSelected>>", on_switch_overall_update_ui)
 
             return
+        def show_task_tip():
+            task_name = self.FARM_TARGET.get()
+            if not task_name:
+                return
+            if tip := LoadQuest(task_name)._TIPS:
+                logger.info(f"\n\n########### TIPS #############\n\n{tip}\n\n##############################")
         def update_combat_strategy_combobox_values():
             if not hasattr(self, 'task_point_comboboxes') or not self.task_point_comboboxes:
                 return
@@ -1084,6 +1153,7 @@ class ConfigPanelApp(tk.Toplevel):
         def on_farm_target_selected(event):
             close_task_specific_config()
             create_task_point_ui()
+            show_task_tip()
         self.farm_target_combo.bind("<<ComboboxSelected>>", on_farm_target_selected)
 
         self.after(200, lambda : [create_task_point_ui(),switch_task_specific_config()])
@@ -1243,14 +1313,17 @@ class ConfigPanelApp(tk.Toplevel):
         frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
         self.official_org_website_1 = ttk.Button(
             frame_row,
-            text=_("旧官网(50钻)"),
+            text=_("点此领取50钻(旧)"),
             command=lambda: click_org_web("https://store.wizardry.info/",self.official_org_website_1))
         self.official_org_website_1.grid(row=0, column=0, sticky=tk.W)
         
         # 2. 官网拿钻石
+        row_counter += 1
+        frame_row = ttk.Frame(container)
+        frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
         self.official_org_website_2 = ttk.Button(
             frame_row,
-            text=_("新官网(50钻)"),
+            text=_("点此领取50钻(新)"),
             command=lambda: click_org_web("https://webstore.wizardry.info/",self.official_org_website_2))
         self.official_org_website_2.grid(row=0, column=1, sticky=tk.W)
 
@@ -1281,6 +1354,7 @@ class ConfigPanelApp(tk.Toplevel):
 
             return input_period == current_period
         def click_am():
+            self.farm_target_category_combo.set('月常')
             self.farm_target_combo.set('[骨头]炉壶灵庙(王都出发)')
             self.farm_target_combo.event_generate('<<ComboboxSelected>>')
             self.AM_switch.grid_remove()
@@ -1376,22 +1450,43 @@ class ConfigPanelApp(tk.Toplevel):
         self.active_csc.grid(row=0, column=0, sticky=tk.W)
 
         # 5. 最大尝试次数
+        def validate_focusout(P,limit,w):
+            if P == "" or (P.isdigit() and int(P) >= int(limit)):
+                return True
+            else:
+                logger.info(_("尝试次数不能低于{a}次.".format(a=limit)))
+                w.set(limit)
+                return False
+
         row_counter += 1
         frame_row = ttk.Frame(container)
         frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
-        def validate_focusout(P):
-            if P == "" or (P.isdigit() and int(P) >= 25):
-                return True
-            else:
-                logger.info(_("尝试次数不能低于25次."))
-                self.MAX_TRY_LIMIT.set(25)
-                return False
-        ttk.Label(frame_row, text=_("状态检查的最大尝试次数:")).grid(row=0, column=0, sticky=tk.W, pady=5)
-        self.max_try_limit_entry = ttk.Entry(frame_row, textvariable=self.MAX_TRY_LIMIT, validate="focusout",
-                                             validatecommand=(self.register(validate_focusout), '%P'), width=3)
-        self.max_try_limit_entry.grid(row=0, column=1)
+        self.max_try_limit_entry = ttk.Entry(
+            frame_row,
+            textvariable=self.MAX_TRY_LIMIT,
+            validate="focusout",validatecommand=(
+                self.register(validate_focusout),
+                '%P',25,self.MAX_TRY_LIMIT),
+            width=3)
+        self.max_try_limit_entry.grid(row=0, column=0)
+        ttk.Label(frame_row, text=_("次定位失败后重启游戏.")).grid(row=0, column=1, sticky=tk.W, pady=5)
         self.button_save_max_try_limit = ttk.Button(frame_row, text=_("保存"), command=self.save_config, width=5)
         self.button_save_max_try_limit.grid(row=0, column=2)
+
+        row_counter += 1
+        frame_row = ttk.Frame(container)
+        frame_row.grid(row=row_counter, column=0, sticky="ew", pady=2)
+        self.max_crash_limit_entry = ttk.Entry(
+            frame_row,
+            textvariable=self.MAX_CRASH_LIMIT,
+            validate="focusout",validatecommand=(
+                self.register(validate_focusout),
+                '%P',10,self.MAX_CRASH_LIMIT),
+            width=3)
+        self.max_crash_limit_entry.grid(row=0, column=0)
+        ttk.Label(frame_row, text=_("次重启游戏后重启模拟器.")).grid(row=0, column=1, sticky=tk.W, pady=5)
+        self.button_save_max_crash_limit = ttk.Button(frame_row, text=_("保存"), command=self.save_config, width=5)
+        self.button_save_max_crash_limit.grid(row=0, column=2)
         
 
         ###################################################################
@@ -1509,9 +1604,12 @@ class ConfigPanelApp(tk.Toplevel):
             self.active_csc,
             self.max_try_limit_entry,
             self.button_save_max_try_limit,
+            self.max_crash_limit_entry,
+            self.button_save_max_crash_limit,
             self.official_org_website_2,
             self.official_org_website_1,
-            self.AM_switch
+            self.AM_switch,
+            self.farm_target_category_combo
             ]
 
         if state == tk.DISABLED:
