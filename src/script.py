@@ -1741,6 +1741,13 @@ def Factory():
 
         # 5. 判断匹配率是否达标
         if highest_match_rate < 0.80:
+
+            # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            # file_path = os.path.join(LOGS_FOLDER_NAME, f"{timestamp}.png")
+            # x, y, w, h = 85, 57, 100, 48
+            # cv2.imwrite(file_path, ScreenShot()[y:y+h, x:x+w].copy())
+            # logger.info(_("重启前截图已保存在{a}中.").format(a=file_path))
+
             logger.info(_("并未设定该角色的行为, 使用自动战斗."))
             AutoThisChar()
             return
@@ -3039,17 +3046,17 @@ def Factory():
                         lambda:FindCoordsOrElseExecuteFallbackAndWait("EdgeOfTown",["return",[1,1]],1)
                         )
 
-                    logger.info(_("第五步: 击杀蝎女"))
-                    RestartableSequenceExecution(
-                        lambda:FindCoordsOrElseExecuteFallbackAndWait("dungFlag",["EdgeOfTown","beginningAbyss","B2FTemple","GotoDung",[1,1]],1),
-                    )
-                    RestartableSequenceExecution(
-                        lambda:StateDungeon([TargetInfo("position","左下",[505,760]),
-                                             TargetInfo("position","左上",[506,821])]),
-                        )
-                    RestartableSequenceExecution(
-                        lambda:FindCoordsOrElseExecuteFallbackAndWait("guild",["return",[1,1]],1),
-                    )
+                    # logger.info(_("第五步: 击杀蝎女"))
+                    # RestartableSequenceExecution(
+                    #     lambda:FindCoordsOrElseExecuteFallbackAndWait("dungFlag",["EdgeOfTown","beginningAbyss","B2FTemple","GotoDung",[1,1]],1),
+                    # )
+                    # RestartableSequenceExecution(
+                    #     lambda:StateDungeon([TargetInfo("position","左下",[505,760]),
+                    #                          TargetInfo("position","左上",[506,821])]),
+                    #     )
+                    # RestartableSequenceExecution(
+                    #     lambda:FindCoordsOrElseExecuteFallbackAndWait("guild",["return",[1,1]],1),
+                    # )
 
                     logger.info(_("第5.5步: 击杀风暴六手"))
                     RestartableSequenceExecution(
@@ -3063,21 +3070,32 @@ def Factory():
                         lambda:FindCoordsOrElseExecuteFallbackAndWait("guild",["return",[1,1]],1),
                     )
                     
+                    #logger.info(_("第六步: 提交悬赏"))
+                    # RestartableSequenceExecution(
+                    #     lambda:Press(FindCoordsOrElseExecuteFallbackAndWait("CompletionReported",["guild","guildRequest","input swipe 600 1400 300 1400","Bounties",[1,1]],1))
+                    #     )
+                    # RestartableSequenceExecution(
+                    #     lambda:FindCoordsOrElseExecuteFallbackAndWait("EdgeOfTown",["return",[1,1]],1)
+                    #     )
+                    
+                    # RestartableSequenceExecution(
+                    #     lambda:Press(FindCoordsOrElseExecuteFallbackAndWait("CompletionReported",["guild","guildRequest","input swipe 600 1400 300 1400","Bounties",[1,1]],1))
+                    #     )
+                    # RestartableSequenceExecution(
+                    #     lambda:FindCoordsOrElseExecuteFallbackAndWait("EdgeOfTown",["return",[1,1]],1)
+                    #     )
                     logger.info(_("第六步: 提交悬赏"))
                     RestartableSequenceExecution(
-                        lambda:Press(FindCoordsOrElseExecuteFallbackAndWait("CompletionReported",["guild","guildRequest","input swipe 600 1400 300 1400","Bounties",[1,1]],1))
-                        )
-                    RestartableSequenceExecution(
-                        lambda:FindCoordsOrElseExecuteFallbackAndWait("EdgeOfTown",["return",[1,1]],1)
-                        )
-                    
+                        lambda:FindCoordsOrElseExecuteFallbackAndWait("guild",["return",[1,1]],1),
+                    )
                     RestartableSequenceExecution(
                         lambda:Press(FindCoordsOrElseExecuteFallbackAndWait("CompletionReported",["guild","guildRequest","input swipe 600 1400 300 1400","Bounties",[1,1]],1))
                         )
                     RestartableSequenceExecution(
                         lambda:FindCoordsOrElseExecuteFallbackAndWait("EdgeOfTown",["return",[1,1]],1)
-                        )
-                    
+                        )                    
+
+
                     logger.info(_("第七步: 休息"))
                     if ((runtimeContext._COUNTERDUNG-1) % (setting.REST_INTERVEL+1) == 0):
                         RestartableSequenceExecution(
